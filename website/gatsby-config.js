@@ -8,7 +8,7 @@ module.exports = {
     FAST_DEV: true,
     PRESERVE_FILE_DOWNLOAD_CACHE: true,
   },
-  pathPrefix: '/custom-applications',
+  pathPrefix: '/custom-applications/_legacy',
   siteMetadata: {
     title: 'Custom Applications',
     description: 'Develop applications for the Merchant Center',
@@ -31,7 +31,7 @@ module.exports = {
     {
       resolve: '@commercetools-docs/gatsby-theme-docs',
       options: {
-        websiteKey: 'custom-applications',
+        websiteKey: 'custom-applications-legacy',
         colorPreset: colorPresets.merchantCenterDeveloperDocs.key,
         beta: true,
         excludeFromSearchIndex: false,

@@ -2,11 +2,11 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/custom-applications",
+      "source": "/custom-applications/_legacy",
       "destination": "/"
     },
     {
-      "source": "/custom-applications/(.*)",
+      "source": "/custom-applications/_legacy/(.*)",
       "destination": "/$1"
     }
   ]
