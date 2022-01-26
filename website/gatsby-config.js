@@ -8,7 +8,7 @@ module.exports = {
     FAST_DEV: true,
     PRESERVE_FILE_DOWNLOAD_CACHE: true,
   },
-  pathPrefix: '/custom-applications/_legacy',
+  pathPrefix: '/custom-applications/legacy',
   siteMetadata: {
     title: 'Custom Applications',
     description: 'Develop applications for the Merchant Center',
@@ -34,7 +34,7 @@ module.exports = {
         websiteKey: 'custom-applications-legacy',
         colorPreset: colorPresets.merchantCenterDeveloperDocs.key,
         beta: true,
-        excludeFromSearchIndex: false,
+        excludeFromSearchIndex: true,
         gaTrackingId: 'UA-38285631-3',
         // Patch the slug creation to get meaningful slugs for the application components
         createNodeSlug: (originalSlug, { node }) => {
@@ -48,6 +48,11 @@ module.exports = {
             );
           }
           return originalSlug;
+        },
+        globalNotification: {
+          notificationType: 'warning',
+          content:
+            'This is the legacy documentation of Project-level Custom Applications, in [maintenance mode](https://docs.commercetools.com/custom-applications/migrating-from-project-level-custom-applications). Visit the [new documentation for Org-level Custom Applications](https://docs.commercetools.com/custom-applications).',
         },
       },
     },

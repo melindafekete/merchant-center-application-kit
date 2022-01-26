@@ -13,11 +13,11 @@
   ],
   "rewrites": [
     {
-      "source": "/custom-applications/_legacy",
+      "source": "/custom-applications/legacy",
       "destination": "/"
     },
     {
-      "source": "/custom-applications/_legacy/(.*)",
+      "source": "/custom-applications/legacy/(.*)",
       "destination": "/$1"
     }
   ]
