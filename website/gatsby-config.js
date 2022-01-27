@@ -52,7 +52,7 @@ module.exports = {
         globalNotification: {
           notificationType: 'warning',
           content:
-            'This is the legacy documentation of Project-level Custom Applications, in [maintenance mode](https://docs.commercetools.com/custom-applications/migrating-from-project-level-custom-applications). Visit the [new documentation for Org-level Custom Applications](https://docs.commercetools.com/custom-applications).',
+            'This is the legacy documentation of Project-level Custom Applications, which is in [maintenance mode](https://docs.commercetools.com/custom-applications/migrating-from-project-level-custom-applications). Visit the new documentation for [Org-level Custom Applications](https://docs.commercetools.com/custom-applications).',
         },
       },
     },
