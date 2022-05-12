@@ -14,119 +14,116 @@
  * This script requires node.js v14.14.0 or higher
  */
 
-import fs from 'fs';
-import path from 'path';
-import mri from 'mri';
-import { getPackages } from '@manypkg/get-packages';
-import { findRootSync } from '@manypkg/find-root';
+ import fs from 'fs';
+ import path from 'path';
+ import mri from 'mri';
+ import { getPackages } from '@manypkg/get-packages';
+ import { findRootSync } from '@manypkg/find-root';
 
-const flags = mri(process.argv.slice(2), { alias: { help: ['h'] } });
-const commands = flags._;
+ const flags = mri(process.argv.slice(2), { alias: { help: ['h'] } });
+ const commands = flags._;
 
-if (commands.length === 0 || (flags.help && commands.length === 0)) {
-  console.log(`
-  Usage: yarn node ./scripts/gatsby-cache.mjs [command]
+ if (commands.length === 0 || (flags.help && commands.length === 0)) {
+   console.log(`
+   Usage: yarn node ./scripts/gatsby-cache.mjs [command]
+   Displays help information.
+   Commands:
+   pre     Extract each Gatsby website's specific {.cache,public} folders from the root directory to each workspace.
+   post    Extract each Gatsby website's specific {.cache,public} folders from each workspace to the root directory.
+   `);
+   process.exit(0);
+ }
 
-  Displays help information.
+ const [command] = commands;
+ switch (command) {
+   case 'pre':
+   case 'post':
+     break;
+   default:
+     throw new Error(
+       `Missing or unsupported command "${command}". Supported commands are "pre" or "post".`
+     );
+ }
 
-  Commands:
+ const workspaceRoot = findRootSync(process.cwd());
+ const globalPublicPath = path.join(workspaceRoot, 'public');
+ const globalCachePath = path.join(workspaceRoot, '.cache');
 
-  pre     Extract each Gatsby website's specific {.cache,public} folders from the root directory to each workspace.
-  post    Extract each Gatsby website's specific {.cache,public} folders from each workspace to the root directory.
-  `);
-  process.exit(0);
-}
+ const moveFolderFromTo = async (from, to) => {
+   await fs.promises.mkdir(from, { recursive: true });
+   const fromTargetExists = (await fs.promises.readdir(from)).length > 0;
 
-const [command] = commands;
-switch (command) {
-  case 'pre':
-  case 'post':
-    break;
-  default:
-    throw new Error(
-      `Missing or unsupported command "${command}". Supported commands are "pre" or "post".`
-    );
-}
+   if (fromTargetExists) {
+     await fs.promises.rm(to, { recursive: true, force: true });
+     await fs.promises.rename(from, to);
+     const toTargetEntries = (await fs.promises.readdir(to)).length;
 
-const workspaceRoot = findRootSync(process.cwd());
-const globalPublicPath = path.join(workspaceRoot, 'public');
-const globalCachePath = path.join(workspaceRoot, '.cache');
+     console.log(`Moved folder ${from} to ${to} (${toTargetEntries} entries)`);
+   } else {
+     console.log(`Folder ${from} does not exist, skipping move.`);
+   }
+ };
 
-const moveFolderFromTo = async (from, to) => {
-  await fs.promises.mkdir(from, { recursive: true });
-  const fromTargetExists = (await fs.promises.readdir(from)).length > 0;
+ const run = async () => {
+   const { packages } = await getPackages(process.cwd());
 
-  if (fromTargetExists) {
-    await fs.promises.rm(to, { recursive: true, force: true });
-    await fs.promises.rename(from, to);
-    const toTargetEntries = (await fs.promises.readdir(to)).length;
+   await fs.promises.mkdir(globalPublicPath, { recursive: true });
+   await fs.promises.mkdir(globalCachePath, { recursive: true });
 
-    console.log(`Moved folder ${from} to ${to} (${toTargetEntries} entries)`);
-  } else {
-    console.log(`Folder ${from} does not exist, skipping move.`);
-  }
-};
+   await Promise.all(
+     packages
+       .filter((workspace) =>
+         workspace.packageJson.name.startsWith('@commercetools-website')
+       )
+       .map(async (workspace) => {
+         const namespaceKey = path.basename(workspace.dir);
 
-const run = async () => {
-  const { packages } = await getPackages(process.cwd());
+         const globalWebsiteCachePath = path.join(globalCachePath, namespaceKey);
+         const localWebsiteCachePath = path.join(workspace.dir, '.cache');
 
-  await fs.promises.mkdir(globalPublicPath, { recursive: true });
-  await fs.promises.mkdir(globalCachePath, { recursive: true });
+         const globalWebsitePublicPath = path.join(
+           globalPublicPath,
+           namespaceKey
+         );
+         const localWebsitePublicPath = path.join(workspace.dir, 'public');
 
-  await Promise.all(
-    packages
-      .filter((workspace) =>
-        workspace.packageJson.name.startsWith('@commercetools-website')
-      )
-      .map(async (workspace) => {
-        const namespaceKey = path.basename(workspace.dir);
+         switch (command) {
+           case 'pre': {
+             // Move global website cache to local cache folder
+             await moveFolderFromTo(
+               globalWebsiteCachePath,
+               localWebsiteCachePath
+             );
 
-        const globalWebsiteCachePath = path.join(globalCachePath, namespaceKey);
-        const localWebsiteCachePath = path.join(workspace.dir, '.cache');
+             // Move global website public to local public folder
+             await moveFolderFromTo(
+               globalWebsitePublicPath,
+               localWebsitePublicPath
+             );
+             break;
+           }
+           case 'post': {
+             // Move local website cache to global cache folder
+             await moveFolderFromTo(
+               localWebsiteCachePath,
+               globalWebsiteCachePath
+             );
 
-        const globalWebsitePublicPath = path.join(
-          globalPublicPath,
-          namespaceKey
-        );
-        const localWebsitePublicPath = path.join(workspace.dir, 'public');
+             // Move local website public to global public folder
+             await moveFolderFromTo(
+               localWebsitePublicPath,
+               globalWebsitePublicPath
+             );
+             break;
+           }
+           default:
+             break;
+         }
+       })
+   );
+ };
 
-        switch (command) {
-          case 'pre': {
-            // Move global website cache to local cache folder
-            await moveFolderFromTo(
-              globalWebsiteCachePath,
-              localWebsiteCachePath
-            );
-
-            // Move global website public to local public folder
-            await moveFolderFromTo(
-              globalWebsitePublicPath,
-              localWebsitePublicPath
-            );
-            break;
-          }
-          case 'post': {
-            // Move local website cache to global cache folder
-            await moveFolderFromTo(
-              localWebsiteCachePath,
-              globalWebsiteCachePath
-            );
-
-            // Move local website public to global public folder
-            await moveFolderFromTo(
-              localWebsitePublicPath,
-              globalWebsitePublicPath
-            );
-            break;
-          }
-          default:
-            break;
-        }
-      })
-  );
-};
-
-run().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+ run().catch((error) => {
+   console.error(error);
+   process.exit(1);
+ });

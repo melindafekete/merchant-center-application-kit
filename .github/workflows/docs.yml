@@ -1,4 +1,4 @@
-name: Documentation workflow
+name: Documentation workflow (legacy)
 
 # The event triggers are configured as following:
 # - on branch main, trigger the workflow on every push
@@ -7,8 +7,7 @@ name: Documentation workflow
 on:
   push:
     branches:
-      - main
-  pull_request:
+      - legacy-docs
 
 jobs:
   build_and_deploy_docs:
@@ -39,9 +38,9 @@ jobs:
           path: |
             .cache
             public
-          key: ${{ runner.os }}-yarn-docs-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-yarn-legacy-docs-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-docs-
+            ${{ runner.os }}-yarn-legacy-docs-
 
       - name: Set custom Yarn cache path
         run: yarn config set cacheFolder .cache/yarn
@@ -56,26 +55,7 @@ jobs:
       - name: Building docs website
         run: yarn build:website
 
-      - name: Detect if is a production deployment (documentation)
-        if: github.event_name == 'push' && github.ref_name == 'main'
-        run: |
-          echo "DEPLOY_DOCS_ENV=Production" >> $GITHUB_ENV
-
-      - name: Deploy to Vercel (Production)
-        if: ${{ env.DEPLOY_DOCS_ENV == 'Production' }}
-        id: deploy-docs-to-vercel-production
-        uses: amondnet/vercel-action@v20
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          scope: commercetools
-          vercel-args: '--prod'
-          vercel-project-name: merchant-center-application-kit
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_DOCS }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID_DOCS }}
-          vercel-token: ${{ secrets.VERCEL_TOKEN_DOCS }}
-
       - name: Initialize GitHub Deployment
-        if: ${{ env.DEPLOY_DOCS_ENV == 'Preview' }}
         uses: bobheadxi/deployments@v1.1.0
         id: start-deployment
         with:
@@ -84,8 +64,7 @@ jobs:
           env: ${{ env.DEPLOY_DOCS_ENV }}
           ref: ${{ github.head_ref }}
 
-      - name: Deploy to Vercel (Preview)
-        if: ${{ env.DEPLOY_DOCS_ENV == 'Preview' }}
+      - name: Deploy to Vercel
         id: deploy-docs-to-vercel-preview
         uses: amondnet/vercel-action@v20
         with:
@@ -97,12 +76,9 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN_DOCS }}
           # there are length restrictions to domains and only *.commercetools.vercel.app works
           # reliably for generated subdomains. No branch name domain because branch names can be long.
-          alias-domains: |
-            appkit-sha-${{ github.sha }}.commercetools.vercel.app
-            appkit-pr-{{PR_NUMBER}}.commercetools.vercel.app
+          alias-domains: mc-custom-applications-legacy.commercetools.vercel.app
 
       - name: Update GitHub Deployment Status
-        if: ${{ env.DEPLOY_DOCS_ENV == 'Preview' }}
         uses: bobheadxi/deployments@v1.1.0
         id: finish_deployment
         with:
@@ -112,27 +88,3 @@ jobs:
           env: ${{ steps.start-deployment.outputs.env }}
           env_url: ${{ steps.deploy-docs-to-vercel-preview.outputs.preview-url }}
           deployment_id: ${{ steps.start-deployment.outputs.deployment_id }}
-
-  link-check:
-    name: 'Check links'
-
-    needs: build_and_deploy_docs
-
-    if: github.event_name != 'push' && github.ref_name != 'main'
-
-    runs-on: ubuntu-latest
-
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Check links
-        uses: JustinBeckwith/linkinator-action@v1.10.0
-        with:
-          paths: https://appkit-sha-${{ github.sha }}.commercetools.vercel.app/custom-applications
-          config: website/linkinator.config.json
-          markdown: false
-          urlRewriteReplace: https://appkit-sha-${{ github.sha }}.commercetools.vercel.app
-          urlRewriteSearch: https://docs.commercetools.com
