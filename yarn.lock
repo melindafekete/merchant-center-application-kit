@@ -27438,21 +27438,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nanoid@npm:^3.1.32, nanoid@npm:^3.3.3":
+  version: 3.3.4
+  resolution: "nanoid@npm:3.3.4"
+  bin:
+    nanoid: bin/nanoid.cjs
+  checksum: 2fddd6dee994b7676f008d3ffa4ab16035a754f4bb586c61df5a22cf8c8c94017aadd360368f47d653829e0569a92b129979152ff97af23a558331e47e37cd9c
+  languageName: node
+  linkType: hard
+
 "nanoid@npm:^3.3.1":
   version: 3.3.1
   resolution: "nanoid@npm:3.3.1"
   bin:
     nanoid: bin/nanoid.cjs
   checksum: 4ef0969e1bbe866fc223eb32276cbccb0961900bfe79104fa5abe34361979dead8d0e061410a5c03bc3d47455685adf32c09d6f27790f4a6898fb51f7df7ec86
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^3.3.3":
-  version: 3.3.4
-  resolution: "nanoid@npm:3.3.4"
-  bin:
-    nanoid: bin/nanoid.cjs
-  checksum: 2fddd6dee994b7676f008d3ffa4ab16035a754f4bb586c61df5a22cf8c8c94017aadd360368f47d653829e0569a92b129979152ff97af23a558331e47e37cd9c
   languageName: node
   linkType: hard
 
@@ -29192,6 +29192,7 @@ __metadata:
     react-dom: 17.0.2
     react-intl: ^5.25.0
     react-router-dom: 5.3.1
+    rollup-plugin-visualizer: ^5.6.0
     vercel: 24.2.1
   languageName: unknown
   linkType: soft
@@ -31964,6 +31965,22 @@ __metadata:
   version: 3.0.1
   resolution: "robust-predicates@npm:3.0.1"
   checksum: 45e9de2df4380da84a2a561d4fd54ea92194e878b93ed19d5e4bc90f4e834a13755e846c8516bab8360190309696f0564a0150386c52ef01f70f2b388449dac5
+  languageName: node
+  linkType: hard
+
+"rollup-plugin-visualizer@npm:^5.6.0":
+  version: 5.6.0
+  resolution: "rollup-plugin-visualizer@npm:5.6.0"
+  dependencies:
+    nanoid: ^3.1.32
+    open: ^8.4.0
+    source-map: ^0.7.3
+    yargs: ^17.3.1
+  peerDependencies:
+    rollup: ^2.0.0
+  bin:
+    rollup-plugin-visualizer: dist/bin/cli.js
+  checksum: 1036a3873f3b6a0c46d692538aaac5dc9f7a7b2a5aec9e7ab816aaf8a31576ae750f415e1019e401707d18490b634a982fbe8c22d9761cafbd9b12c756e7fd99
   languageName: node
   linkType: hard
 

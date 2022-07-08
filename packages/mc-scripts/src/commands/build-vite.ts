@@ -1,11 +1,19 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { build, type Plugin } from 'vite';
+import { mergeWith } from 'lodash';
 import pluginGraphql from '@rollup/plugin-graphql';
 import pluginReact from '@vitejs/plugin-react';
 import { generateTemplate } from '@commercetools-frontend/mc-html-template';
 import { packageLocation as applicationStaticAssetsPath } from '@commercetools-frontend/assets';
 import paths from '../config/paths';
+
+function mergeCustomizer(target: unknown, source: unknown) {
+  if (Array.isArray(target)) {
+    return target.concat(source);
+  }
+  return undefined;
+}
 
 async function run() {
   const DEFAULT_PORT = parseInt(String(process.env.HTTP_PORT), 10) || 3001;
@@ -23,7 +31,7 @@ async function run() {
   // Write `index.html` (template) into the `/public` folder.
   fs.writeFileSync(paths.appIndexHtml, html, { encoding: 'utf8' });
 
-  await build({
+  const baseConfig = {
     root: paths.appRoot,
     define: {
       'process.env.DEBUG': JSON.stringify(false),
@@ -52,7 +60,22 @@ async function run() {
         },
       }),
     ],
-  });
+  };
+
+  let rollupCustomConfig = {};
+  const rollupCustomConfigPath = path.join(paths.appRoot, 'rollup.config.js');
+  const doesRollupCustomConfigExist = fs.existsSync(rollupCustomConfigPath);
+  if (doesRollupCustomConfigExist) {
+    rollupCustomConfig = await import(rollupCustomConfigPath);
+  }
+
+  const mergedConfig = mergeWith(
+    baseConfig,
+    rollupCustomConfig,
+    mergeCustomizer
+  );
+
+  await build(mergedConfig);
 
   // Rename `/public/public/index.html` to `/public/index.html.template`
   fs.renameSync(
