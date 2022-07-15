@@ -55,7 +55,7 @@
     "@commercetools/sync-actions": "^4.10.1",
     "@formatjs/cli": "4.8.4",
     "@manypkg/cli": "0.19.1",
-    "@testing-library/react": "12.1.5",
+    "@testing-library/react": "13.3.0",
     "@testing-library/react-hooks": "7.0.2",
     "eslint": "8.15.0",
     "eslint-formatter-pretty": "4.1.0",
